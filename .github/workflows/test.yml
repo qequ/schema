@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: self-hosted
+    runs-on: alvaro-ASUS-TUF-Gaming-F15-FX506LHB-FX506LHB
 
     steps:
     - name: Check out repository
