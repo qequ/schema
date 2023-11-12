@@ -1,13 +1,13 @@
 name: Python Test on Pull Requests
 
 on:
-  pull_request:
-    branches:
-      - master
+    pull_request:
+        branches:
+          - master
 
 jobs:
   build-and-test:
-    runs-on: alvaro-ASUS-TUF-Gaming-F15-FX506LHB-FX506LHB
+    runs-on: ubuntu-latest
 
     steps:
     - name: Check out repository
