@@ -1,6 +1,37 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+* [JSON Schema] Add title for Literal. [Denis Blanchette]
+
+### Fixes
+
+* JSON Schema missing title in subschemas. [Denis Blanchette]
+
+* [JSON Schema] Type "null" should be string. [Denis Blanchette]
+
+* Ruff format. [Denis Blanchette]
+
+* Include py.typed module when building package. [Stavros Korokithakis]
+
+
+## v0.7.7 (2024-05-04)
+
+### Fixes
+
+* Fix setuptools not finding the schema package (fixes #311) [Stavros Korokithakis]
+
+
+## v0.7.6 (2024-03-26)
+
+### Fixes
+
+* Trim trailing whitespace. [Stavros Korokithakis]
+
+
 ## v0.7.4 (2021-02-01)
 
 ### Fixes
