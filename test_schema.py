@@ -446,6 +446,37 @@ def test_dict_key_error():
         assert e.code == "k2 should be int"
 
 
+def test_wrong_key_reports_key_schema_error():
+    # A custom `error` on a key schema must not be lost when a data key fails to
+    # match it and is therefore reported as a wrong key (issue #345).
+    re_name = re.compile(r"^[A-Z][A-Za-z0-9]+$")
+    schema = Schema({Regex(re_name, error="Invalid profile name"): dict})
+    try:
+        schema.validate({"Foo": {}, "bar": {}})
+    except SchemaWrongKeyError as e:
+        assert e.code == "Invalid profile name"
+    else:
+        raise AssertionError("SchemaWrongKeyError not raised")
+
+    # Without a custom error the default wrong-key message is still used.
+    try:
+        Schema({Regex(re_name): dict}).validate({"Foo": {}, "bar": {}})
+    except SchemaWrongKeyError as e:
+        assert e.code == "Wrong key 'bar' in {'Foo': {}, 'bar': {}}"
+    else:
+        raise AssertionError("SchemaWrongKeyError not raised")
+
+    # The custom error is also surfaced for And-based key schemas.
+    try:
+        Schema({And(str, str.isupper, error="must be upper"): int}).validate(
+            {"FOO": 1, "bar": 2}
+        )
+    except SchemaWrongKeyError as e:
+        assert e.code == "must be upper"
+    else:
+        raise AssertionError("SchemaWrongKeyError not raised")
+
+
 def test_complex():
     s = Schema(
         {
@@ -1084,7 +1115,7 @@ def test_json_schema_ecma_compliant_regex():
         "$schema": "http://json-schema.org/draft-07/schema#",
         "$id": "my-id",
         "properties": {
-            "username": {"type": "string", "pattern": "^([a-zA-Z_][a-zA-Z0-9_]*)\/$"}
+            "username": {"type": "string", "pattern": r"^([a-zA-Z_][a-zA-Z0-9_]*)\/$"}
         },
         "required": [],
         "additionalProperties": False,
@@ -2059,3 +2090,13 @@ def test_callable_error():
     except SchemaError as ex:
         e = ex
     assert e.errors == ["This is the error message"]
+
+
+def test_tuple_key_error_message_does_not_crash():
+    # Regression test for #253: a tuple dict key (including the empty tuple) must not raise
+    # "TypeError: not enough arguments for format string" when building the key error message.
+    assert Schema({(): [(str,)]}).is_valid({(): ["foo", ("bar",)]}) is False
+
+    with raises(SchemaError) as exc_info:
+        Schema({("a", "b"): int}).validate({("a", "b"): "not-an-int"})
+    assert "Key '('a', 'b')' error:" in exc_info.value.code
